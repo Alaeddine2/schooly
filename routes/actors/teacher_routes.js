@@ -1,21 +1,13 @@
 const express = require("express");
-const adminSchema = require("../../schemas/actors/admin_schema");
-const authSchema = require("../../schemas/auth_schema");
+const router = express.Router();
+const teacherSchema = require("../../schemas/actors/teacher_schema");
 const tokenSchema = require("../../schemas/token_schema");
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
 const utils = require("../../utils/util_methods");
+const mongoose = require("mongoose");
 const constants = require("../../utils/constants");
 
-const router = express.Router();
-
-// Test route
-router.get("/", (req, res) => {
-  res.send('test route');
-});
-
-// Retrieve all admins
-router.post("/retrieve/", utils.extractToken, (req, res) => {
+//Get all teachers
+router.post("/retrieve", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
     .exec()
@@ -25,18 +17,18 @@ router.post("/retrieve/", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      adminSchema.find((err, adminList) => {
+      teacherSchema.find((err, teacher) => {
         if (err) {
           console.log(err);
         } else {
-          res.json({ adminList });
+          res.json(teacher);
         }
       });
     });
 });
 
-// Retrieve admin  by ID
-router.post("/retrieve/one", utils.extractToken, (req, res) => {
+//Get teacher By ID
+router.post("/retrieve/:id", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
     .exec()
@@ -46,18 +38,18 @@ router.post("/retrieve/one", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      let id = req.body.id;
-      adminSchema
+      let id = req.params.id;
+      teacherSchema
         .find({ _id: id })
         .exec()
-        .then((adminList) => {
-          if (adminList.length < 1) {
+        .then((teacherList) => {
+          if (teacherList.length < 1) {
             return res.status(401).json({
               message: "ID not found!",
             });
           }
-          if (adminList) {
-            res.json(adminList[0]);
+          if (teacherList) {
+            res.json(teacherList[0]);
           }
         });
     });
@@ -75,72 +67,63 @@ router.post("/retrieveList", utils.extractToken, (req, res) => {
                 });
             }
             console.log(req.body.list);
-            adminSchema
+            // let id = req.params.id;
+            teacherSchema
                 .find({ _id : { $in : req.body.list } })
                 .exec()
-                .then((adminList) => {
-                    if (adminList.length < 1) {
+                .then((resultList) => {
+                    if (resultList.length < 1) {
                         return res.status(401).json({
                             message: "ID not found!",
                         });
                     }
-                    if (adminList) {
-                        res.json(adminList);
+                    if (resultList) {
+                        res.json(resultList);
                     }
                 });
         });
 });
 
-//Add new admin
-router.post("/add", (req, res) => {
-  console.log(req.body.name);
-  adminSchema.find(
+//add new teacher
+router.post("/add", utils.extractToken, (req, res) => {
+  console.log('hi');
+  teacherSchema.find(
     { $or: [{ nic: req.body.username }, { phone: req.body.phone }] },
-    function (err, matchingAdmins) {
-      //console.log(matchingAdmins);
-      if (matchingAdmins.length >= 1) {
-        console.log(matchingAdmins);
-        res.status(409).send({
-          message: "admin already exists",
+    function (err, matchingTeachers) {
+      if (matchingTeachers.length >= 1) {
+        console.log(matchingTeachers);
+        res.status(409).json({
+          message: "teacher already exists",
         });
       } else {
-        const hash = bcrypt.hashSync(req.body.password, 8);
         const newObjectID = mongoose.Types.ObjectId();
-        const adminModel = new adminSchema({
-          objectId: newObjectID,
+        let teacherModel = new teacherSchema({
+          _id: newObjectID,
           nic: req.body.username,
-          email: req.body.email,
           name: req.body.name,
           surname: req.body.surname,
-          cin: req.body.cin,
           phone: req.body.phone,
+          email: req.body.email,
+          sex: req.body.sex,
+          dob: req.body.dob,
+          address: req.body.address,
+          institute: req.body.institute,
+          speciality: req.body.speciality,
+          reg_no: req.body.reg_no,
         });
-        const authModel = new authSchema({
-          user_id: newObjectID,
-          nic: req.body.username,
-          phone: req.body.phone,
-          user_type: constants.USER_TYPE_ADMIN,
-          password_hash: hash,
-        });
-        authModel.save().catch((err) => {
-          console.log(err.message);
-          res.status(500).json({
-            error: err,
-          });
-        });
-        adminModel
+        teacherModel
           .save()
           .then((result) => {
-            //console.log(result);
-            res.status(201).json({
-              message: "admin added",
-              data: result,
+            console.log(result);
+            res.status(200).json({
+              message: "New teacher added successfully",
+              createdTeacher: result,
             });
           })
           .catch((err) => {
-            console.log(err.message);
-            res.status(500).json({
-              message: "Adding new admin failed",
+            console.log(err);
+            res.status(400).json({
+              message: "Adding new teacher failed",
               error: err,
             });
           });
@@ -149,7 +132,7 @@ router.post("/add", (req, res) => {
   );
 });
 
-//update
+//Update teacher
 router.post("/update/:id", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
@@ -160,12 +143,12 @@ router.post("/update/:id", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      adminSchema
-        .updateOne({ _id: req.params.id }, req.body)
+      teacherSchema
+        .update({ _id: req.params.id }, req.body)
         .then((result) => {
           res.status(200).json({
             message: "Updated successfully",
-            createdAdmin: new adminSchema(req.body),
+            createdParent: result,
           });
         })
         .catch((err) => {
@@ -177,7 +160,8 @@ router.post("/update/:id", utils.extractToken, (req, res) => {
     });
 });
 
-router.post("/delete/:id", utils.extractToken, (req, res) => {
+//teacher Delete
+router.delete("/delete/:id", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
     .exec()
@@ -187,29 +171,11 @@ router.post("/delete/:id", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      adminSchema.findOneAndDelete({ _id: req.params.id }, (err, admin) => {
+      teacherSchema.findOneAndDelete({ _id: req.params.id }, (err, teacher) => {
         if (err) {
           res.json(err);
         } else {
-          authSchema.findOneAndDelete(
-            { user_id: req.params.id },
-            (err, admin) => {
-              if (err) {
-                res.json(err);
-              } else {
-                tokenSchema.findOneAndDelete(
-                  { user_id: req.params.id },
-                  (err, admin) => {
-                    if (err) {
-                      res.json(err);
-                    } else {
-                      res.json("deleted successfully");
-                    }
-                  }
-                );
-              }
-            }
-          );
+          res.json("Deleted successfully");
         }
       });
     });
@@ -219,7 +185,7 @@ router.post("/find", (req, res) => {
   var name = req.body.name;
   var query = {};
   query[name] = { $regex: req.body.value };
-  adminSchema
+  teacherSchema
     .find(query)
     .exec()
     .then((resultList) => {

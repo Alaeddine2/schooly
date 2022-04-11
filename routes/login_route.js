@@ -12,7 +12,8 @@ const router = express.Router();
 
 //login
 router.post("/", (req, res) => {
-    authSchema.find( { $or: [{'nic': req.body.username}, {'phone': req.body.username}, {'reg_no': req.body.username}]},
+    console.log(req.body.username)
+    authSchema.find( { $or: [{'nic': req.body.username}]},
         function(err, userList){
             if (userList.length < 1) {
                 return res.status(401).json({

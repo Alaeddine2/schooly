@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-  objectId: {
-    type: String,
-    required: true,
-  },
   nic: {
     type: String,
     required: true,
@@ -19,6 +15,7 @@ const schema = new mongoose.Schema({
   },
   phone: {
     type: String,
+    required: true,
   },
   email: {
     type: String,
@@ -45,6 +42,9 @@ const schema = new mongoose.Schema({
   },
   dob: {
     type: Date
+  },
+  class_id: {
+    type: String
   }
 });
 

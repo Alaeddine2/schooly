@@ -6,7 +6,7 @@ const mongoose = require("mongoose");
 const configs = require('./config/config');
 const loginRoute = require("./routes/login_route");
 const actorRoutes = require("./routes/actors/main_routes");
-
+const objectRoutes = require("./routes/objects/main_routes");
 //const path = require('path'); //used for file path
 
 //app.use(express.static(path.join(__dirname, 'public')));
@@ -30,6 +30,7 @@ app.get('/', (req, res) =>{
 })
 app.use("/login", loginRoute);
 app.use("/actors", actorRoutes);
+app.use("/objects", objectRoutes);
 
 const server = app.listen(configs.BACKEND_PORT, function () {
     console.log("Student management system backend server is running on port : " + configs.BACKEND_PORT);
