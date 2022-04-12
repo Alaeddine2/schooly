@@ -144,11 +144,16 @@ router.post("/update/:id", utils.extractToken, (req, res) => {
         });
       }
       teacherSchema
-        .update({ _id: req.params.id }, req.body)
+        .find({ _id: req.params.id })
+        .exec()
+        .then((teacherList) => {
+          teacherSchema
+        .updateOne({ _id: req.params.id }, req.body)
         .then((result) => {
           res.status(200).json({
             message: "Updated successfully",
-            createdParent: result,
+            result: result,
+            createdTeacher: teacherList[0],
           });
         })
         .catch((err) => {
@@ -156,6 +161,7 @@ router.post("/update/:id", utils.extractToken, (req, res) => {
             message: "Updating failed",
             error: err,
           });
+        });
         });
     });
 });
