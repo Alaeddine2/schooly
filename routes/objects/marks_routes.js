@@ -2,11 +2,65 @@ const express = require("express");
 const router = express.Router();
 const databaseSchema = require("../../schemas/objects/marks_schema");
 
-router.post("/retrieve", (req, res) => {
-    databaseSchema.find()
+router.post("/retrieve", async (req, res) => {
+    databaseSchema.find().populate('student').populate('class').populate('subject')
         .skip(req.body.skip)
         .limit(req.body.limit)
         .then(results => {
+            res.json(results);
+    })
+    /*const orders = await databaseSchema.aggregate([
+        //{$match: {year: "2022-2023"}},
+        {$group: {
+            _id: '$student_id',
+            "student" : {"$addToSet":"$student"},
+            "class" : {"$push":"$class"},
+            "marksList" : {"$addToSet":"$marks"},
+            "sbjectsList" : {"$addToSet":"$subject"},
+            "year" : {"$addToSet":"$year"},
+            "semester": {"$addToSet":"$semester"}
+        }},
+        { $lookup: { from: 'm_students', localField: 'student', foreignField: '_id', as: 'student' } },
+        { $lookup: { from: 'm_classes', localField: 'class', foreignField: '_id', as: 'class' } },
+        { $lookup: { from: 'm_sbject', localField: 'subject', foreignField: '_id', as: 'subject' } },])
+        console.log(orders);*/
+});
+
+//get all marks of a year
+router.post("/retrieve/date", async (req, res) => {
+    databaseSchema.find({year: req.body.year})
+        .skip(req.body.skip)
+        .limit(req.body.limit)
+        .populate('student')
+        .populate('class')
+        .populate('subject')
+        .then(async results => {
+            res.json(results);
+    })
+});
+
+//get all marks of a by user and date
+router.post("/retrieve/student", async (req, res) => {
+    databaseSchema.find({year: req.body.year, student_id: req.body.student_id})
+        .skip(req.body.skip)
+        .limit(req.body.limit)
+        .populate('student')
+        .populate('class')
+        .populate('subject')
+        .then(async results => {
+            res.json(results);
+    })
+});
+
+//get all marks of a year
+router.post("/retrieve/class", async (req, res) => {
+    databaseSchema.find({year: req.body.year, class_id: req.body.class_id})
+        .skip(req.body.skip)
+        .limit(req.body.limit)
+        .populate('student')
+        .populate('class')
+        .populate('subject')
+        .then(async results => {
             res.json(results);
     })
 });
@@ -46,12 +100,17 @@ router.post("/add", (req, res) => {
 });
 
 router.post("/update/:id", (req, res) => {
-    databaseSchema.update({_id: req.params.id}, req.body)
+    databaseSchema.updateOne({_id: req.params.id}, req.body)
         .then(result => {
+            databaseSchema.find({_id: req.params.id})
+        .exec()
+        .then(resultList => {
             res.status(200).json({
                 message: "Updated successfully",
-                created: result
+                created: resultList[0]
             });
+        })
+            
         })
         .catch(err => {
             res.status(400).json({
@@ -61,7 +120,7 @@ router.post("/update/:id", (req, res) => {
         });
 });
 
-router.post("/delete/:id", (req, res) => {
+router.delete("/delete/:id", (req, res) => {
     databaseSchema.findOneAndDelete(
         {_id: req.params.id},
         (err, result) => {

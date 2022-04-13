@@ -9,6 +9,10 @@ const schema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    isAdmin: {
+      type: Boolean,
+      default: true
+    },
     name: {
       type: String,
     },
@@ -26,7 +30,7 @@ const schema = new mongoose.Schema({
     },
     access_level: {
       type: Number,
-      default: 1
+      default: 0
     },
 });
 

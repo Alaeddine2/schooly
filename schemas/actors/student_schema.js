@@ -45,6 +45,10 @@ const schema = new mongoose.Schema({
   },
   class_id: {
     type: String
+  },
+  profile_img:{
+    type: String,
+    default: 'public/1649822484429.png'
   }
 });
 

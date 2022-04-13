@@ -57,6 +57,11 @@ const schema = new mongoose.Schema({
       speciality: {
         type: String
       },
+      profile_img:{
+        type: String,
+        default: "public/1649836385095.png"
+      },
+      subject:{type: mongoose.Schema.Types.ObjectId, ref: 'm_subject'}
 });
 
 const teacherSchema = mongoose.model('m_teacher', schema);

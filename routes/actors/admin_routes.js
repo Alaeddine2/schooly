@@ -97,7 +97,6 @@ router.post("/add", (req, res) => {
   adminSchema.find(
     { $or: [{ nic: req.body.username }, { phone: req.body.phone }] },
     function (err, matchingAdmins) {
-      //console.log(matchingAdmins);
       if (matchingAdmins.length >= 1) {
         console.log(matchingAdmins);
         res.status(409).send({
@@ -114,6 +113,8 @@ router.post("/add", (req, res) => {
           surname: req.body.surname,
           cin: req.body.cin,
           phone: req.body.phone,
+          isAdmin: req.body.isAdmin,
+          access_level: req.body.isAdmin ? 0 : 1
         });
         const authModel = new authSchema({
           user_id: newObjectID,

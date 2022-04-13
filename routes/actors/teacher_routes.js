@@ -10,6 +10,7 @@ const constants = require("../../utils/constants");
 router.post("/retrieve", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
+    
     .exec()
     .then((resultList) => {
       if (resultList.length < 1) {
@@ -17,12 +18,12 @@ router.post("/retrieve", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      teacherSchema.find((err, teacher) => {
-        if (err) {
-          console.log(err);
-        } else {
-          res.json(teacher);
-        }
+      teacherSchema.find().populate('subject').exec().then(teachers => {
+        res.json(teachers);
+      }).catch(err=>{
+        res.status(409).json({
+          message: err,
+        });
       });
     });
 });
@@ -40,7 +41,7 @@ router.post("/retrieve/:id", utils.extractToken, (req, res) => {
       }
       let id = req.params.id;
       teacherSchema
-        .find({ _id: id })
+        .find({ _id: id }).populate('subject')
         .exec()
         .then((teacherList) => {
           if (teacherList.length < 1) {
@@ -59,6 +60,7 @@ router.post("/retrieve/:id", utils.extractToken, (req, res) => {
 router.post("/retrieveList", utils.extractToken, (req, res) => {
     tokenSchema
         .find({ token: req.token })
+
         .exec()
         .then((resultList) => {
             if (resultList.length < 1) {
@@ -69,7 +71,7 @@ router.post("/retrieveList", utils.extractToken, (req, res) => {
             console.log(req.body.list);
             // let id = req.params.id;
             teacherSchema
-                .find({ _id : { $in : req.body.list } })
+                .find({ _id : { $in : req.body.list } }).populate('subject')
                 .exec()
                 .then((resultList) => {
                     if (resultList.length < 1) {
@@ -86,7 +88,6 @@ router.post("/retrieveList", utils.extractToken, (req, res) => {
 
 //add new teacher
 router.post("/add", utils.extractToken, (req, res) => {
-  console.log('hi');
   teacherSchema.find(
     { $or: [{ nic: req.body.username }, { phone: req.body.phone }] },
     function (err, matchingTeachers) {
@@ -110,6 +111,7 @@ router.post("/add", utils.extractToken, (req, res) => {
           institute: req.body.institute,
           speciality: req.body.speciality,
           reg_no: req.body.reg_no,
+          subject: req.body.subject_id
         });
         teacherModel
           .save()
