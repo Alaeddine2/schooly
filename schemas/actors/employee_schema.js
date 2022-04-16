@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 const constants = require("../../utils/constants");
 
 const schema = new mongoose.Schema({
-      nic: {
-        type: String,
-        required: true,
-      },
       name: {
         type: String,
         required: true,
@@ -25,10 +21,6 @@ const schema = new mongoose.Schema({
         type: Boolean,
         default: true
       },
-      access_level: {
-        type: Number,
-        default: 2
-      },
       sex: {
         type: String,
       },
@@ -36,9 +28,6 @@ const schema = new mongoose.Schema({
         type: Date
       },
       address: {
-        type: String
-      },
-      reg_no: {
         type: String
       },
       reg_date: {
@@ -51,10 +40,7 @@ const schema = new mongoose.Schema({
         type: Boolean,
         default: false
       },
-      institute: {
-        type: String
-      },
-      speciality: {
+      field: {
         type: String
       },
       salary:{
@@ -62,11 +48,10 @@ const schema = new mongoose.Schema({
       },
       profile_img:{
         type: String,
-        default: "public/1649836385095.png"
-      },
-      subject:{type: mongoose.Schema.Types.ObjectId, ref: 'm_subject'}
+        default: "public/1649870625005.png"
+      }
 });
 
-const teacherSchema = mongoose.model('m_teacher', schema);
-module.exports = teacherSchema;
+const emplyeeSchema = mongoose.model('m_employee', schema);
+module.exports = emplyeeSchema;
 

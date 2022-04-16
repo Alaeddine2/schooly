@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const teacherSchema = require("../../schemas/actors/teacher_schema");
+const employeeSchema = require("../../schemas/actors/employee_schema");
 const tokenSchema = require("../../schemas/token_schema");
 const utils = require("../../utils/util_methods");
 const mongoose = require("mongoose");
 const constants = require("../../utils/constants");
 
-//Get all teachers
+//Get all employees
 router.post("/retrieve", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
@@ -17,17 +17,17 @@ router.post("/retrieve", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      teacherSchema.find().populate('subject').exec().then(teachers => {
-        res.json(teachers);
+      employeeSchema.find().exec().then(employees => {
+        res.status(200).json(employees);
       }).catch(err=>{
         res.status(409).json({
-          message: err,
+          message: err
         });
       });
     });
 });
 
-//Get teacher By ID
+//Get employee By ID
 router.post("/retrieve/:id", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
@@ -39,67 +39,36 @@ router.post("/retrieve/:id", utils.extractToken, (req, res) => {
         });
       }
       let id = req.params.id;
-      teacherSchema
-        .find({ _id: id }).populate('subject')
+      employeeSchema
+        .find({ _id: id })
         .exec()
-        .then((teacherList) => {
-          if (teacherList.length < 1) {
+        .then((employeeList) => {
+          if (employeeList.length < 1) {
             return res.status(401).json({
               message: "ID not found!",
             });
           }
-          if (teacherList) {
-            res.json(teacherList[0]);
+          if (employeeList) {
+            res.json(employeeList[0]);
           }
         });
     });
 });
 
-// Retrieve admin  by ID
-router.post("/retrieveList", utils.extractToken, (req, res) => {
-    tokenSchema
-        .find({ token: req.token })
-
-        .exec()
-        .then((resultList) => {
-            if (resultList.length < 1) {
-                return res.status(401).json({
-                    message: "Invalid Token",
-                });
-            }
-            console.log(req.body.list);
-            // let id = req.params.id;
-            teacherSchema
-                .find({ _id : { $in : req.body.list } }).populate('subject')
-                .exec()
-                .then((resultList) => {
-                    if (resultList.length < 1) {
-                        return res.status(401).json({
-                            message: "ID not found!",
-                        });
-                    }
-                    if (resultList) {
-                        res.json(resultList);
-                    }
-                });
-        });
-});
-
-//add new teacher
+//add new employee
 router.post("/add", utils.extractToken, (req, res) => {
-  teacherSchema.find(
-    { $or: [{ nic: req.body.username }, { phone: req.body.phone }] },
+  employeeSchema.find(
+    { $or: [{ phone: req.body.phone }] },
     function (err, matchingTeachers) {
       if (matchingTeachers.length >= 1) {
         console.log(matchingTeachers);
         res.status(409).json({
-          message: "teacher already exists",
+          message: "employee already exist change the phone number",
         });
       } else {
         const newObjectID = mongoose.Types.ObjectId();
-        let teacherModel = new teacherSchema({
+        let employeeModel = new employeeSchema({
           _id: newObjectID,
-          nic: req.body.username,
           name: req.body.name,
           surname: req.body.surname,
           phone: req.body.phone,
@@ -107,25 +76,24 @@ router.post("/add", utils.extractToken, (req, res) => {
           sex: req.body.sex,
           dob: req.body.dob,
           address: req.body.address,
-          institute: req.body.institute,
-          speciality: req.body.speciality,
-          reg_no: req.body.reg_no,
-          subject: req.body.subject_id,
-          salary: req.body.salary
+          salary: req.body.salary,
+          reg_date: new Date(),
+          field: req.body.field,
+          profile_img: req.body.profile_img
         });
-        teacherModel
+        employeeModel
           .save()
           .then((result) => {
             console.log(result);
             res.status(200).json({
-              message: "New teacher added successfully",
-              createdTeacher: result,
+              message: "New employee added successfully",
+              createdEmployee: result,
             });
           })
           .catch((err) => {
             console.log(err);
             res.status(400).json({
-              message: "Adding new teacher failed",
+              message: "Adding new employee failed",
               error: err,
             });
           });
@@ -134,7 +102,7 @@ router.post("/add", utils.extractToken, (req, res) => {
   );
 });
 
-//Update teacher
+//Update employee
 router.post("/update/:id", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
@@ -145,17 +113,18 @@ router.post("/update/:id", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      teacherSchema
+      
+        employeeSchema
         .updateOne({ _id: req.params.id }, req.body)
         .then((result) => {
-        teacherSchema
+        employeeSchema
         .find({ _id: req.params.id })
         .exec()
-        .then((teacherList) => {
+        .then((employeeList) => {
           res.status(200).json({
             message: "Updated successfully",
             result: result,
-            createdTeacher: teacherList[0],
+            createdEmployee: employeeList[0],
           });
         })
         .catch((err) => {
@@ -168,7 +137,7 @@ router.post("/update/:id", utils.extractToken, (req, res) => {
     });
 });
 
-//teacher Delete
+//employee Delete
 router.delete("/delete/:id", utils.extractToken, (req, res) => {
   tokenSchema
     .find({ token: req.token })
@@ -179,7 +148,7 @@ router.delete("/delete/:id", utils.extractToken, (req, res) => {
           message: "Invalid Token",
         });
       }
-      teacherSchema.findOneAndDelete({ _id: req.params.id }, (err, teacher) => {
+      employeeSchema.findOneAndDelete({ _id: req.params.id }, (err, employee) => {
         if (err) {
           res.json(err);
         } else {
@@ -193,7 +162,7 @@ router.post("/find", (req, res) => {
   var name = req.body.name;
   var query = {};
   query[name] = { $regex: req.body.value };
-  teacherSchema
+  employeeSchema
     .find(query)
     .exec()
     .then((resultList) => {

@@ -36,16 +36,7 @@ router.post("/retrieve/", utils.extractToken, (req, res) => {
 });
 
 // Retrieve admin  by ID
-router.post("/retrieve/one", utils.extractToken, (req, res) => {
-  tokenSchema
-    .find({ token: req.token })
-    .exec()
-    .then((resultList) => {
-      if (resultList.length < 1) {
-        return res.status(401).json({
-          message: "Invalid Token",
-        });
-      }
+router.post("/retrieve/one", (req, res) => {
       let id = req.body.id;
       adminSchema
         .find({ _id: id })
@@ -60,8 +51,26 @@ router.post("/retrieve/one", utils.extractToken, (req, res) => {
             res.json(adminList[0]);
           }
         });
+});
+
+// Retrieve admin  by objectid
+router.post("/retrieve/login", (req, res) => {
+  let id = req.body.id;
+  adminSchema
+    .find({ objectId: id })
+    .exec()
+    .then((adminList) => {
+      if (adminList.length < 1) {
+        return res.status(401).json({
+          message: "ID not found!",
+        });
+      }
+      if (adminList) {
+        res.json(adminList[0]);
+      }
     });
 });
+
 
 // Retrieve admin  by ID
 router.post("/retrieveList", utils.extractToken, (req, res) => {
@@ -122,6 +131,7 @@ router.post("/add", (req, res) => {
           phone: req.body.phone,
           user_type: constants.USER_TYPE_ADMIN,
           password_hash: hash,
+          owner_id: newObjectID
         });
         authModel.save().catch((err) => {
           console.log(err.message);

@@ -13,7 +13,7 @@ var path = require('path');
 
 //const path = require('path'); //used for file path
 
-//app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 mongoose
     .connect(
@@ -37,7 +37,10 @@ app.use("/tools", toolRoute);
 app.use("/actors", actorRoutes);
 app.use("/objects", objectRoutes);
 app.use("/relation", relationRoutes);
-app.use(express.static(__dirname + '/public'));
+app.use(express.static('public'));
+
+//Serves all the request which includes /images in the url from Images folder
+app.use('/images', express.static(__dirname + '/'));
 
 const server = app.listen(configs.BACKEND_PORT, function () {
     console.log("Student management system backend server is running on port : " + configs.BACKEND_PORT);

@@ -101,7 +101,6 @@ router.post("/add", utils.extractToken, (req, res) => {
           message: "Student already exists",
         });
       } else {
-        console.log('starts2');
         const newObjectID = mongoose.Types.ObjectId();
         const studentModel = new studentSchema({
           _id: newObjectID,
@@ -215,12 +214,14 @@ router.post("/affect/class", (req, res) => {
       studentSchema
         .updateOne({ _id: req.body.student_id }, {
           "$set": {
-            "class_id":  req.body.class_id
+            "class_id": req.body.class_id,
+            "class": req.body.class_id
           }
         })
         .then((result) => {
           studentSchema
           .find({ _id: req.body.student_id })
+          .populate('class')
           .exec()
           .then((studentList) => {
               res.status(200).json({
@@ -266,6 +267,22 @@ router.post("/retrieveclass", utils.extractToken, (req, res) => {
         });
       }
     });
+});
+
+router.post("/retrieve/payment/all", utils.extractToken, async (req, res) => {
+  const sum_payed_value = await studentSchema.aggregate([ {
+    $group: {
+       _id: null,
+       TotalAmount: {
+          $sum: "$payed_value_per_year"
+        }
+      }
+  } ] );
+  console.log(sum_payed_value);
+  res.status(200).json({
+    message: "successfully getting whole programmed payed amout",
+    TotalAmount: sum_payed_value[0].TotalAmount
+  })
 });
 
 module.exports = router;

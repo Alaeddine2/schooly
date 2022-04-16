@@ -20,6 +20,9 @@ const schema = new mongoose.Schema({
     },
     user_type: {
         type: String
+    },
+    owner_id: {
+        type: String
     }
 });
 

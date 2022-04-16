@@ -16,7 +16,7 @@ router.post("/", (req, res) => {
     authSchema.find( { $or: [{'nic': req.body.username}]},
         function(err, userList){
             if (userList.length < 1) {
-                return res.status(401).json({
+                return res.status(400).json({
                     message: "Authorization Failed!"
                 });
             } else if (userList && bcrypt.compareSync(req.body.password, userList[0].password_hash)) {
@@ -37,11 +37,6 @@ router.post("/", (req, res) => {
                     user_type: userList[0].user_type,
                     token: token
                 });
-                tokenSchema.findOneAndDelete({user_id: userList[0].user_id}, (err, admin) => {
-                    // if (err) {
-                    //     res.json(err);
-                    // }
-                });
                 console.log("Arrived until token write");
                 tokenModel.save().catch(err => { // todo check for previous  tokens for the same userID and delete. implement async to expire saved tokens
                     console.log("Error in saving token during login: " + err.message);
@@ -54,7 +49,7 @@ router.post("/", (req, res) => {
                     user_id: userList[0].user_id
                 });
             }
-            res.status(401).json({
+            res.status(400).json({
                 message: "Authorization Failed!"
             });
         });

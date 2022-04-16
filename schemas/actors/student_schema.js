@@ -46,9 +46,16 @@ const schema = new mongoose.Schema({
   class_id: {
     type: String
   },
+  class: {
+    type: mongoose.Schema.Types.ObjectId, ref: 'm_classes'
+  },
   profile_img:{
     type: String,
     default: 'public/1649822484429.png'
+  },
+  payed_value_per_year:{
+    type: Number,
+    default: 3000
   }
 });
 
